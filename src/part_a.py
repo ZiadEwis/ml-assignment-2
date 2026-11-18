@@ -1,14 +1,20 @@
 """Part A (Tasks 1–4): data preparation and toolkit checks. Owner: Mostafa."""
 
 import numpy as np
-import matplotlib.pyplot as plt
-
+import pandas as pd
+from pathlib import Path
 from assignment2_core import (
     Standardizer,
     add_bias,
     class_metrics,
+    macro_metrics,
+    mse,
+    rmse,
+    r2,
+    accuracy,
+    grad_check,
+    standardization_checks,
 )
-from plot_utils import savefig
 
 
 def splits(X, y, classification):
@@ -65,33 +71,127 @@ def prepare(data):
     return prepared
 
 
-def part_a(P):
-    for name, d in P.items():
-        ytr, yva, yte = d["y"]
-        sizes = tuple(map(len, (ytr, yva, yte)))
-        print(f"{name}: train/val/test={sizes}")
-        if name != "diabetes":
-            print(
-                " class counts:",
-                [
-                    np.bincount(
-                        y, minlength=int(max(ytr.max(), yva.max(), yte.max())) + 1
-                    ).tolist()
-                    for y in d["y"]
-                ],
-            )
-    rng = np.random.default_rng(42)
-    y, p = (rng.integers(0, 4, 500), rng.integers(0, 4, 500))
-    cm, pr, re, f1 = class_metrics(y, p, 4)
-    from sklearn.metrics import confusion_matrix as scm, precision_recall_fscore_support
+def save_table(frame, name, output_dir):
+    """Print a numerical table and optionally save it as CSV."""
+    print("\n" + name)
+    print(frame.to_string(index=False))
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        frame.to_csv(output_dir / (name + ".csv"), index=False)
 
-    assert np.array_equal(cm, scm(y, p, labels=np.arange(4)))
-    assert np.allclose(
-        np.r_[pr, re, f1],
-        np.r_[
-            precision_recall_fscore_support(y, p, labels=np.arange(4), zero_division=0)[
-                :3
-            ]
-        ],
+
+def part_a(P, out=None):
+    """Run Tasks 1–4 and optionally save numerical tables."""
+    expected_sizes = {
+        "diabetes": (264, 89, 89),
+        "breast_cancer": (341, 114, 114),
+        "digits": (1077, 360, 360),
+        "iris": (90, 30, 30),
+    }
+    split_rows, class_rows, scaling_rows = ([], [], [])
+    for name, dataset in P.items():
+        targets = dataset["y"]
+        sizes = tuple((len(y) for y in targets))
+        assert sizes == expected_sizes[name], (name, sizes)
+        split_rows.append([name, *sizes])
+        if name != "diabetes":
+            K = int(np.concatenate(targets).max()) + 1
+            proportions = np.bincount(np.concatenate(targets), minlength=K) / sum(sizes)
+            for split_name, y in zip(["train", "validation", "test"], targets):
+                counts = np.bincount(y, minlength=K)
+                assert np.all(np.abs(counts - len(y) * proportions) <= 1.0 + 1e-12)
+                for label, count in enumerate(counts):
+                    class_rows.append([name, split_name, label, int(count)])
+        if dataset["scaler"] is not None:
+            train, validation, test = (X[:, 1:] for X in dataset["X"])
+            stats = standardization_checks(train, validation, test)
+            scaling_rows.append(
+                [
+                    name,
+                    stats["train_mean_max_abs"],
+                    stats["train_std_max_abs_error"],
+                    float(np.abs(validation.mean(0)).max()),
+                    float(np.abs(test.mean(0)).max()),
+                    float(np.abs(validation.std(0) - 1).max()),
+                    float(np.abs(test.std(0) - 1).max()),
+                ]
+            )
+    constant_example = np.array([[1.0, 4.0], [3.0, 4.0], [5.0, 4.0]])
+    scaler = Standardizer().fit(constant_example)
+    assert scaler.scale_[1] == 1
+    assert np.all(scaler.transform(constant_example)[:, 1] == 0)
+    assert np.all(add_bias(constant_example)[:, 0] == 1)
+    from sklearn import metrics as reference
+
+    rng = np.random.default_rng(42)
+    y = rng.integers(0, 4, size=500)
+    predicted = rng.integers(0, 4, size=500)
+    cm, precision, recall, f1 = class_metrics(y, predicted, 4)
+    reference_scores = reference.precision_recall_fscore_support(
+        y, predicted, labels=np.arange(4), zero_division=0
     )
-    print("Part A metric checks passed.")
+    assert np.array_equal(
+        cm, reference.confusion_matrix(y, predicted, labels=np.arange(4))
+    )
+    checks = {
+        "mse": (mse(y, predicted), reference.mean_squared_error(y, predicted)),
+        "rmse": (
+            rmse(y, predicted),
+            np.sqrt(reference.mean_squared_error(y, predicted)),
+        ),
+        "r2": (r2(y, predicted), reference.r2_score(y, predicted)),
+        "accuracy": (accuracy(y, predicted), reference.accuracy_score(y, predicted)),
+        "precision": (precision, reference_scores[0]),
+        "recall": (recall, reference_scores[1]),
+        "f1": (f1, reference_scores[2]),
+        "macro": (
+            macro_metrics(y, predicted, 4),
+            reference.precision_recall_fscore_support(
+                y, predicted, labels=np.arange(4), average="macro", zero_division=0
+            )[:3],
+        ),
+    }
+    metric_rows = []
+    for name, (actual, expected) in checks.items():
+        error = float(np.max(np.abs(np.asarray(actual) - np.asarray(expected))))
+        assert error <= 1e-12, (name, error)
+        metric_rows.append([name, error])
+    _, absent_precision, _, _ = class_metrics(y, np.zeros_like(y), 4)
+    assert np.all(absent_precision[1:] == 0)
+    point = rng.normal(0, 0.1, size=5)
+    gradient_error = grad_check(lambda w: 0.5 * (w @ w), lambda w: w, point)
+    assert gradient_error < 1e-06
+    save_table(
+        pd.DataFrame(split_rows, columns=["dataset", "train", "validation", "test"]),
+        "a_split_sizes",
+        out,
+    )
+    save_table(
+        pd.DataFrame(class_rows, columns=["dataset", "split", "class", "count"]),
+        "a_class_counts",
+        out,
+    )
+    save_table(
+        pd.DataFrame(
+            scaling_rows,
+            columns=[
+                "dataset",
+                "train_max_abs_mean",
+                "train_max_std_error",
+                "validation_max_abs_mean",
+                "test_max_abs_mean",
+                "validation_max_std_error",
+                "test_max_std_error",
+            ],
+        ),
+        "a_standardization",
+        out,
+    )
+    save_table(
+        pd.DataFrame(metric_rows, columns=["metric", "max_absolute_error"]),
+        "a_metric_checks",
+        out,
+    )
+    print(f"Part A passed; gradient-check error = {gradient_error:.3g}.")
+    return {"gradient_error": gradient_error, "metric_errors": metric_rows}
