@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-
 from assignment2_core import (
     Standardizer,
     add_bias,
@@ -72,44 +71,28 @@ def prepare(data):
     return prepared
 
 
-def record_table(frame, name, output_dir, interpretation):
-    """Print a result and return Markdown for the final notebook."""
+def save_table(frame, name, output_dir):
+    """Print a numerical table and optionally save it as CSV."""
     print("\n" + name)
     print(frame.to_string(index=False))
     if output_dir is not None:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
         frame.to_csv(output_dir / (name + ".csv"), index=False)
-    columns = [str(column) for column in frame.columns]
-    lines = [
-        "| " + " | ".join(columns) + " |",
-        "| " + " | ".join(["---"] * len(columns)) + " |",
-    ]
-    for row in frame.itertuples(index=False, name=None):
-        values = [
-            (
-                format(value, ".8g")
-                if isinstance(value, (float, np.floating))
-                else str(value)
-            )
-            for value in row
-        ]
-        lines.append("| " + " | ".join(values) + " |")
-    return "\n".join(lines) + "\n\n" + interpretation + "\n\n"
 
 
 def part_a(P, out=None):
-    """Run Tasks 1–4 and save the tables and explanation when out is given."""
+    """Run Tasks 1–4 and optionally save numerical tables."""
     expected_sizes = {
         "diabetes": (264, 89, 89),
         "breast_cancer": (341, 114, 114),
         "digits": (1077, 360, 360),
         "iris": (90, 30, 30),
     }
-    split_rows, class_rows, scaling_rows = [], [], []
+    split_rows, class_rows, scaling_rows = ([], [], [])
     for name, dataset in P.items():
         targets = dataset["y"]
-        sizes = tuple(len(y) for y in targets)
+        sizes = tuple((len(y) for y in targets))
         assert sizes == expected_sizes[name], (name, sizes)
         split_rows.append([name, *sizes])
         if name != "diabetes":
@@ -134,14 +117,11 @@ def part_a(P, out=None):
                     float(np.abs(test.std(0) - 1).max()),
                 ]
             )
-
-    # Exercise sigma=0 on a separate small example.
     constant_example = np.array([[1.0, 4.0], [3.0, 4.0], [5.0, 4.0]])
     scaler = Standardizer().fit(constant_example)
     assert scaler.scale_[1] == 1
     assert np.all(scaler.transform(constant_example)[:, 1] == 0)
     assert np.all(add_bias(constant_example)[:, 0] == 1)
-
     from sklearn import metrics as reference
 
     rng = np.random.default_rng(42)
@@ -179,26 +159,20 @@ def part_a(P, out=None):
         metric_rows.append([name, error])
     _, absent_precision, _, _ = class_metrics(y, np.zeros_like(y), 4)
     assert np.all(absent_precision[1:] == 0)
-
-    # Task 4 checks the checker itself against a quadratic with a known derivative.
     point = rng.normal(0, 0.1, size=5)
     gradient_error = grad_check(lambda w: 0.5 * (w @ w), lambda w: w, point)
-    assert gradient_error < 1e-6
-
-    report = "# Part A — Data and toolkit\n\n"
-    report += record_table(
+    assert gradient_error < 1e-06
+    save_table(
         pd.DataFrame(split_rows, columns=["dataset", "train", "validation", "test"]),
         "a_split_sizes",
         out,
-        "All four split sizes match the assignment.",
     )
-    report += record_table(
+    save_table(
         pd.DataFrame(class_rows, columns=["dataset", "split", "class", "count"]),
         "a_class_counts",
         out,
-        "Every class count differs from its proportional allocation by at most one sample.",
     )
-    report += record_table(
+    save_table(
         pd.DataFrame(
             scaling_rows,
             columns=[
@@ -213,21 +187,11 @@ def part_a(P, out=None):
         ),
         "a_standardization",
         out,
-        "Training columns have mean zero and standard deviation one within tolerance; held-out statistics generally differ. Digits uses pixels divided by 16, as specified.",
     )
-    report += (
-        "The mean and standard deviation must be learned from training rows because they are part of the fitted preprocessing. "
-        "Computing them from all rows lets held-out observations influence the fitted pipeline, making the test estimate less representative of unseen data.\n\n"
-    )
-    report += record_table(
+    save_table(
         pd.DataFrame(metric_rows, columns=["metric", "max_absolute_error"]),
         "a_metric_checks",
         out,
-        "All metric comparisons pass the required 1e-12 tolerance, including macro averages and the never-predicted-class convention.",
     )
-    report += f"The central-difference checker has relative error {gradient_error:.3g} on a quadratic at a random point, below 1e-6. "
-    report += "The bias-column and zero-variance-column checks also pass.\n"
-    if out is not None:
-        Path(out, "part_a.md").write_text(report)
     print(f"Part A passed; gradient-check error = {gradient_error:.3g}.")
     return {"gradient_error": gradient_error, "metric_errors": metric_rows}

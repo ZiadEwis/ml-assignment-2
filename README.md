@@ -6,7 +6,7 @@ We implement linear regression, ridge regression, logistic regression, softmax, 
 
 ## Current progress
 
-Parts A and B now include their required experiments, numerical checks, tables, figures, and written explanations. Their code has been run on the prescribed splits. Parts C, D, E and F still need the corrections and completion described below. The final combined notebook and submission remain to be assembled.
+Parts A and B include implementations of the required numerical experiments and checks. Verification uses temporary output folders during development. Written derivations and explanations will be prepared after the code and experiments are finalized. Parts C, D, E and F still need the corrections and completion described below.
 
 Task numbers below refer to **Section 6 — Tasks** in the assignment PDF. The PDF jumps from Task 28 to Task 30.
 
