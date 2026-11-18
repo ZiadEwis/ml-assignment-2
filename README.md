@@ -6,7 +6,7 @@ We implement linear regression, ridge regression, logistic regression, softmax, 
 
 ## Current progress
 
-The core functions and initial experiments are implemented. The experiment runner has completed on all four datasets. Each member should review their tasks against the PDF, correct the existing experiments, and complete the missing checks, figures, and explanations.
+Parts A and B now include their required experiments, numerical checks, tables, figures, and written explanations. Their code has been run on the prescribed splits. Parts C, D, E and F still need the corrections and completion described below. The final combined notebook and submission remain to be assembled.
 
 Task numbers below refer to **Section 6 — Tasks** in the assignment PDF. The PDF jumps from Task 28 to Task 30.
 
@@ -41,6 +41,8 @@ README.md                 Team guide
 
 Part F will be written in the final notebook once the experiments are complete.
 
+Current work focuses on the source code. Generate and review results when testing the experiments, then assemble the final notebook with the team.
+
 ## Run the code
 
 Run these commands from the project folder using Python 3.9 or newer with compatible package versions.
@@ -62,7 +64,7 @@ The last verified run used Python 3.13. The four datasets come with scikit-learn
 
 ## Where to start
 
-- **Mostafa:** finish toolkit verification, macro metrics, convergence and scaling experiments, ridge reporting, and Task 10 comparisons and timings.
+- **Mostafa:** review the Parts A and B source code, then test the experiments and prepare the results for final notebook assembly.
 - **Member 2:** correct logistic validation-loss selection and use the λ = 0.01 model in Task 15. Complete the logistic boundary, softmax initialization and final-model error analysis, the two-class equivalence check, and the two-feature Iris experiment.
 - **Member 3:** finish SVM validation curves and objective/margin/support-vector comparisons. Add multiclass hinge training and the required kernel figures. Correct Task 28 to use training rows only for cross-validation. Assemble Part F and the final deliverables after receiving the other members' work.
 

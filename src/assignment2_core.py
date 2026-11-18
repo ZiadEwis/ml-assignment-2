@@ -54,6 +54,7 @@ def confusion_matrix(y, pred, K):
 def class_metrics(y, pred, K):
     cm = confusion_matrix(y, pred, K)
     tp = np.diag(cm).astype(float)
+    # A class that is never predicted has precision zero.
     precision = np.divide(tp, cm.sum(0), out=np.zeros(K), where=cm.sum(0) != 0)
     recall = np.divide(tp, cm.sum(1), out=np.zeros(K), where=cm.sum(1) != 0)
     f1 = np.divide(
@@ -63,6 +64,12 @@ def class_metrics(y, pred, K):
         where=(precision + recall) != 0,
     )
     return cm, precision, recall, f1
+
+
+def macro_metrics(y, pred, K):
+    """Unweighted averages across all K classes, including absent classes."""
+    _, precision, recall, f1 = class_metrics(y, pred, K)
+    return float(precision.mean()), float(recall.mean()), float(f1.mean())
 
 
 def grad_check(f, grad, w, eps=1e-5, entries=None, rng=None):
@@ -226,13 +233,19 @@ def standardization_checks(X_train, X_validation, X_test, atol=1e-9):
     """Confirm only training columns are exactly standardized."""
     train_mean = np.mean(X_train, axis=0)
     train_std = np.std(X_train, axis=0)
-    if not np.allclose(train_mean, 0.0, atol=atol):
+    if not np.all(np.abs(train_mean) < atol):
         raise AssertionError("standardized training means are not zero")
-    if not np.allclose(train_std, 1.0, atol=atol):
+    nonconstant = train_std > atol
+    if not np.allclose(train_std[nonconstant], 1.0, atol=atol, rtol=0):
         raise AssertionError("standardized training standard deviations are not one")
     return {
         "train_mean_max_abs": float(np.abs(train_mean).max()),
-        "train_std_max_abs_error": float(np.abs(train_std - 1).max()),
+        "train_std_max_abs_error": (
+            float(np.abs(train_std[nonconstant] - 1).max())
+            if nonconstant.any()
+            else 0.0
+        ),
+        "constant_columns": int((~nonconstant).sum()),
         "validation_mean": np.mean(X_validation, axis=0),
         "test_mean": np.mean(X_test, axis=0),
     }

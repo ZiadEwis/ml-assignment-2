@@ -52,7 +52,7 @@ def main():
     prepared = prepare(load_all())
 
     if args.part == "all":
-        part_a(prepared)
+        part_a(prepared, output_dir)
         part_b(prepared["diabetes"], output_dir)
         part_c(prepared["breast_cancer"], output_dir)
         part_d(prepared["digits"], output_dir)
@@ -60,7 +60,7 @@ def main():
         task22_and_25(prepared, output_dir)
         off_the_shelf(prepared, output_dir)
     elif args.part == "a":
-        part_a(prepared)
+        part_a(prepared, output_dir)
     elif args.part == "b":
         part_b(prepared["diabetes"], output_dir)
     elif args.part == "c":
