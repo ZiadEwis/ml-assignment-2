@@ -6,7 +6,7 @@ We implement linear regression, ridge regression, logistic regression, softmax, 
 
 ## Current progress
 
-Parts A and B include implementations of the required numerical experiments and checks. Verification uses temporary output folders during development. Written derivations and explanations will be prepared after the code and experiments are finalized. Parts C, D, E and F still need the corrections and completion described below.
+Parts A, B, C, and D include implementations of the required numerical experiments and checks. Verification uses output folders during development. Written derivations and explanations will be prepared after all code and experiments are finalized. Parts E and F still need completion by Member 3.
 
 Task numbers below refer to **Section 6 — Tasks** in the assignment PDF. The PDF jumps from Task 28 to Task 30.
 
@@ -15,7 +15,7 @@ Task numbers below refer to **Section 6 — Tasks** in the assignment PDF. The P
 | Member | Scope | Files |
 | --- | --- | --- |
 | Mostafa | Parts A and B, Tasks 1–10 | `part_a.py`, `part_b.py` |
-| Member 2 | Parts C and D, Tasks 11–22 | `part_c.py`, `part_d.py` |
+| Ziad | Parts C and D, Tasks 11–22 | `part_c.py`, `part_d.py` |
 | Member 3 | Parts E and F, Tasks 23–28 and 30–31, plus notebook assembly and submission | `part_e.py` and the final notebook |
 
 Each member provides their own derivations, check results, figures, tables, and interpretations. Member 3 assembles Part F using contributions from everyone, organizes the final notebook, and prepares the PDF and ZIP.
@@ -64,8 +64,8 @@ The last verified run used Python 3.13. The four datasets come with scikit-learn
 
 ## Where to start
 
-- **Mostafa:** review the Parts A and B source code, then test the experiments and prepare the results for final notebook assembly.
-- **Member 2:** correct logistic validation-loss selection and use the λ = 0.01 model in Task 15. Complete the logistic boundary, softmax initialization and final-model error analysis, the two-class equivalence check, and the two-feature Iris experiment.
+- **Mostafa:** review Parts A and B source code, test experiments and prepare results for final notebook assembly.
+- **Ziad:** Parts C and D complete (Tasks 11–22). All required numerical checks, tables, and figures verified and saved in `outputs/results/`.
 - **Member 3:** finish SVM validation curves and objective/margin/support-vector comparisons. Add multiclass hinge training and the required kernel figures. Correct Task 28 to use training rows only for cross-validation. Assemble Part F and the final deliverables after receiving the other members' work.
 
 The PDF contains the full requirements and tolerances for each task. Bonus tasks are outside the current allocation.
