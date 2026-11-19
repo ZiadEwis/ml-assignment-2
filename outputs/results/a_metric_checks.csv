@@ -1,9 +1,0 @@
-metric,max_absolute_error
-mse,0.0
-rmse,0.0
-r2,0.0
-accuracy,0.0
-precision,0.0
-recall,0.0
-f1,5.551115123125783e-17
-macro,0.0

@@ -1,5 +1,0 @@
-learning_rate,final_data_loss,relative_distance,first_epoch_below_1e-3,status
-1e-08,3583.5321022429885,0.9999985696135455,not reached,finite
-1e-06,2388.75258220855,0.9999676302127517,not reached,finite
-1e-05,1827.5349100578878,0.9998463739822518,not reached,finite
-0.0001,inf,inf,not reached,diverged
