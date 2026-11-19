@@ -15,7 +15,7 @@ import numpy as np
 from part_a import load_all, part_a, prepare, splits
 from part_b import part_b
 from part_c import part_c, library_comparisons as logistic_comparisons
-from part_d import part_d, task_22, library_comparisons as softmax_comparisons
+from part_d import part_d, plot_iris_decision_boundaries, library_comparisons as softmax_comparisons
 from part_e import part_e, task_25, task_28, library_comparisons as svm_comparisons
 from plot_utils import savefig
 
@@ -23,7 +23,7 @@ from plot_utils import savefig
 def task22_and_25(prepared, output_dir):
     """Keep the original combined call available for existing callers."""
     rng = np.random.default_rng(42)
-    task_22(prepared, output_dir, rng=rng)
+    plot_iris_decision_boundaries(prepared, output_dir, rng=rng)
     task_25(prepared, output_dir, rng=rng)
 
 
@@ -68,7 +68,7 @@ def main():
         logistic_comparisons(prepared, output_dir)
     elif args.part == "d":
         part_d(prepared["digits"], output_dir)
-        task_22(prepared, output_dir)
+        plot_iris_decision_boundaries(prepared, output_dir)
         softmax_comparisons(prepared, output_dir)
     elif args.part == "e":
         part_e(prepared["breast_cancer"], output_dir)
