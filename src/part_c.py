@@ -24,7 +24,7 @@ from part_a import save_table
 from plot_utils import savefig
 
 
-def task_11(dataset, out):
+def verify_logistic_gradient_and_stability(dataset, out):
     """Task 11: Derivation, stable implementation, and gradient checking."""
     Xtr, _, _ = dataset["X"]
     ytr, _, _ = dataset["y"]
@@ -90,7 +90,7 @@ def task_11(dataset, out):
     return error
 
 
-def task_12(dataset, out):
+def train_and_tune_logistic_regression(dataset, out):
     """Task 12: Training, regularization sweep, and learning rate analysis."""
     Xtr, Xva, Xte = dataset["X"]
     ytr, yva, yte = dataset["y"]
@@ -185,7 +185,7 @@ def task_12(dataset, out):
     return {"best_lam": best_lam, "test_accuracy": test_acc_best, "w_best": best_w, "w_001": w_001}
 
 
-def task_13(dataset, out):
+def analyze_linear_separability(dataset, out):
     """Task 13: Linear separability experiment with unregularized logistic regression."""
     Xtr, _, _ = dataset["X"]
     ytr, _, _ = dataset["y"]
@@ -223,7 +223,7 @@ def task_13(dataset, out):
     assert norms[-1] > norms[0] * 20.0, "Weights must grow substantially without regularization"
 
 
-def task_14(dataset, out):
+def benchmark_sklearn_logistic_regression(dataset, out):
     """Task 14: Off-the-shelf comparisons with scikit-learn's LogisticRegression."""
     Xtr, Xva, Xte = dataset["X"]
     ytr, yva, yte = dataset["y"]
@@ -305,7 +305,7 @@ def task_14(dataset, out):
     )
 
 
-def task_15(dataset, w_001, out):
+def evaluate_roc_and_tune_threshold(dataset, w_001, out):
     """Task 15: Evaluation beyond accuracy using the lambda = 0.01 model."""
     _, Xva, Xte = dataset["X"]
     _, yva, yte = dataset["y"]
@@ -360,7 +360,7 @@ def task_15(dataset, w_001, out):
     )
 
 
-def task_16(dataset, out):
+def plot_raw_coordinates_decision_boundary(dataset, out):
     """Task 16: Decision boundary in original coordinates (mean radius and mean texture)."""
     raw_tr, _, _ = dataset["raw"]
     ytr, _, _ = dataset["y"]
@@ -449,9 +449,18 @@ def task_16(dataset, out):
     savefig(out, "c16_boundary")
 
 
+# Aliases for task-based callers
+task_11 = verify_logistic_gradient_and_stability
+task_12 = train_and_tune_logistic_regression
+task_13 = analyze_linear_separability
+task_14 = benchmark_sklearn_logistic_regression
+task_15 = evaluate_roc_and_tune_threshold
+task_16 = plot_raw_coordinates_decision_boundary
+
+
 def library_comparisons(P, out):
     """Off-the-shelf wrapper called by assignment runner."""
-    task_14(P["breast_cancer"], out)
+    benchmark_sklearn_logistic_regression(P["breast_cancer"], out)
 
 
 def part_c(d, out):
@@ -459,22 +468,22 @@ def part_c(d, out):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
 
-    print("\n=== Running Task 11 ===")
-    task_11(d, out)
+    print("\n=== Verifying Logistic Gradient and Stability (Task 11) ===")
+    verify_logistic_gradient_and_stability(d, out)
 
-    print("\n=== Running Task 12 ===")
-    t12_res = task_12(d, out)
+    print("\n=== Training & Tuning Logistic Regression (Task 12) ===")
+    t12_res = train_and_tune_logistic_regression(d, out)
 
-    print("\n=== Running Task 13 ===")
-    task_13(d, out)
+    print("\n=== Analyzing Linear Separability (Task 13) ===")
+    analyze_linear_separability(d, out)
 
-    print("\n=== Running Task 14 ===")
-    task_14(d, out)
+    print("\n=== Benchmarking with Scikit-Learn LogisticRegression (Task 14) ===")
+    benchmark_sklearn_logistic_regression(d, out)
 
-    print("\n=== Running Task 15 ===")
-    task_15(d, t12_res["w_001"], out)
+    print("\n=== Evaluating ROC and Tuning Classification Threshold (Task 15) ===")
+    evaluate_roc_and_tune_threshold(d, t12_res["w_001"], out)
 
-    print("\n=== Running Task 16 ===")
-    task_16(d, out)
+    print("\n=== Plotting Raw Coordinates Decision Boundary (Task 16) ===")
+    plot_raw_coordinates_decision_boundary(d, out)
 
     print(f"\nPart C passed completely. Tables and figures saved to {out}.")

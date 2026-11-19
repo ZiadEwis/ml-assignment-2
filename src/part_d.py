@@ -23,7 +23,7 @@ from part_a import save_table
 from plot_utils import savefig
 
 
-def task_17(dataset, out):
+def verify_softmax_gradient_and_stability(dataset, out):
     """Task 17: Stable softmax, cross-entropy via log-sum-exp, and gradient check."""
     Xtr, _, _ = dataset["X"]
     ytr, _, _ = dataset["y"]
@@ -73,7 +73,7 @@ def task_17(dataset, out):
     )
 
 
-def task_18(dataset, out):
+def train_and_tune_softmax_classifier(dataset, out):
     """Task 18: Mini-batch gradient descent (B=64, 100 epochs), learning rate & lambda sweeps."""
     Xtr, Xva, Xte = dataset["X"]
     ytr, yva, yte = dataset["y"]
@@ -190,7 +190,7 @@ def task_18(dataset, out):
     return {"best_eta": best_eta, "best_lam": best_lam, "best_W": best_W, "test_acc": test_acc}
 
 
-def task_19(dataset, best_lam, best_W, out):
+def benchmark_sklearn_softmax_classifier(dataset, best_lam, best_W, out):
     """Task 19: Off-the-shelf comparison with scikit-learn's LogisticRegression."""
     Xtr, Xva, Xte = dataset["X"]
     ytr, yva, yte = dataset["y"]
@@ -229,7 +229,7 @@ def task_19(dataset, best_lam, best_W, out):
     )
 
 
-def task_20(dataset, best_W, out):
+def analyze_digit_classification_errors_and_weights(dataset, best_W, out):
     """Task 20: Error analysis, confusion matrix, and 8x8 weight template visualization."""
     _, _, Xte = dataset["X"]
     _, _, yte = dataset["y"]
@@ -294,7 +294,7 @@ def task_20(dataset, best_W, out):
     savefig(out, "d20_weights")
 
 
-def task_21(digits_dataset, bc_dataset, out):
+def verify_binary_equivalence_and_initializations(digits_dataset, bc_dataset, out):
     """Task 21: Proof and numerical check that K=2 softmax equals binary logistic regression, plus initialization study."""
     # 1. Numerical verification of 2-class equivalence using Breast Cancer test features
     _, _, Xte_bc = bc_dataset["X"]
@@ -350,7 +350,7 @@ def task_21(digits_dataset, bc_dataset, out):
     )
 
 
-def task_22(P, out, rng=None):
+def visualize_iris_decision_boundaries(P, out, rng=None):
     """Task 22: Softmax decision regions on Iris using standardized petal length and petal width."""
     iris = P["iris"]
     raw_tr, _, raw_te = iris["raw"]
@@ -425,6 +425,15 @@ def task_22(P, out, rng=None):
     )
 
 
+# Aliases for task-based callers
+task_17 = verify_softmax_gradient_and_stability
+task_18 = train_and_tune_softmax_classifier
+task_19 = benchmark_sklearn_softmax_classifier
+task_20 = analyze_digit_classification_errors_and_weights
+task_21 = verify_binary_equivalence_and_initializations
+task_22 = visualize_iris_decision_boundaries
+
+
 def library_comparisons(P, out):
     """Task 19 off-the-shelf wrapper called by assignment runner."""
     dg = P["digits"]
@@ -446,23 +455,23 @@ def part_d(d, out):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
 
-    print("\n=== Running Task 17 ===")
-    task_17(d, out)
+    print("\n=== Verifying Softmax Gradient and Numerical Stability (Task 17) ===")
+    verify_softmax_gradient_and_stability(d, out)
 
-    print("\n=== Running Task 18 ===")
-    t18_res = task_18(d, out)
+    print("\n=== Training & Tuning Softmax Classifier (Task 18) ===")
+    t18_res = train_and_tune_softmax_classifier(d, out)
 
-    print("\n=== Running Task 19 ===")
-    task_19(d, t18_res["best_lam"], t18_res["best_W"], out)
+    print("\n=== Benchmarking with Scikit-Learn Softmax (Task 19) ===")
+    benchmark_sklearn_softmax_classifier(d, t18_res["best_lam"], t18_res["best_W"], out)
 
-    print("\n=== Running Task 20 ===")
-    task_20(d, t18_res["best_W"], out)
+    print("\n=== Analyzing Digits Classification Errors & Weight Templates (Task 20) ===")
+    analyze_digit_classification_errors_and_weights(d, t18_res["best_W"], out)
 
     # For Task 21 we also pass breast cancer data for 2-class equivalence check
     from part_a import load_all, prepare
     all_prepared = prepare(load_all())
 
-    print("\n=== Running Task 21 ===")
-    task_21(d, all_prepared["breast_cancer"], out)
+    print("\n=== Verifying Binary Equivalence and Weight Initializations (Task 21) ===")
+    verify_binary_equivalence_and_initializations(d, all_prepared["breast_cancer"], out)
 
     print(f"\nPart D passed completely. Tables and figures saved to {out}.")
